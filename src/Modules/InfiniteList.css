@@ -1,0 +1,43 @@
+.infinite-list{
+    padding: 64px 0px 16px;
+    background: whitesmoke
+}
+
+.infinite-list .header{
+    height: 64px;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background: orange;
+    line-height: 64px;
+    vertical-align: middle;
+    padding-left: 16px;
+    font-size: 24px;
+    color: white;
+    font-family: cursive;
+}
+
+.infinite-list .fab{
+    cursor: pointer;
+    height: 64px;
+    width: 64px;
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    background: #f5a540;
+    box-shadow: 1px 1px 10px -2px black;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    padding-top: 5px;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+.infinite-list .up-arrow{
+    border: solid white;
+    border-width: 0 3px 3px 0;
+    display: inline-block;
+    padding: 5px;
+    transform: rotate(-135deg);
+}
