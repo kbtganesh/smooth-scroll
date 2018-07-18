@@ -1,8 +1,8 @@
 import React from 'react';
 import './ListRow.css'
 const ListRow = (props) => {
-    return ( <div className="list-row">
-        {(props.index+1) + '. '+props.data}
+    return ( <div className="list-row" style={props.style}>
+        {props.index + '. '+props.data}
     </div> );
 }
  

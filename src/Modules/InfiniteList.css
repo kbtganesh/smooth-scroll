@@ -1,5 +1,5 @@
 .infinite-list{
-    padding: 64px 0px 16px;
+    padding: 68px 0px 16px;
     background: whitesmoke
 }
 
@@ -15,6 +15,16 @@
     font-size: 24px;
     color: white;
     font-family: cursive;
+}
+
+.infinite-list .container{
+    overflow: auto;
+    height: 731px;
+}
+
+.infinite-list .wrapper{
+    overflow: hidden;
+    position: relative;
 }
 
 .infinite-list .fab{
