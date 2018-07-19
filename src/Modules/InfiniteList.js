@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import ListRow from "../Components/ListRow";
+import TreeRow from "../Components/TreeRow";
 import './InfiniteList.css'
 class InfiniteList extends Component {
     constructor(props) {
@@ -24,11 +25,11 @@ class InfiniteList extends Component {
             })
             // let elem = document.getElementById('wrapper');
             let elem = window;
-        this.container.addEventListener('scroll', this.onScroll);
+        // this.container.addEventListener('scroll', this.onScroll);
     }
 
     componentWillUnmount() {
-        this.container.removeEventListener('scroll', this.onScroll, false);
+        // this.container.removeEventListener('scroll', this.onScroll, false);
     }
 
     onScroll(event){
@@ -62,7 +63,10 @@ class InfiniteList extends Component {
             <div className="header">
                 Infinite List
             </div>
-            <div className="container" ref={input=>{this.container = input}}>
+
+            <TreeRow title={'ganesh'} />
+
+            {/* <div className="container" ref={input=>{this.container = input}}>
                 <div className="wrapper" 
                     id = 'wrapper'
                      onWheel={this.onWheel} 
@@ -70,7 +74,7 @@ class InfiniteList extends Component {
                      >
                     {rows}
                 </div>
-            </div>
+            </div> */}
         </div>);
     }
 }
