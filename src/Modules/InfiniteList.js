@@ -48,7 +48,6 @@ class InfiniteList extends Component {
         startSplice -= 5;
         startSplice = startSplice < 0 ? 0 : startSplice;
         var noOfRowsInView = r(height / 68);
-        console.log('noOfRowsInView: ', noOfRowsInView);
 
         this.setState(prevState => {
             //   console.log('--------------------------');
@@ -56,14 +55,13 @@ class InfiniteList extends Component {
             //   console.log('No of Rows: ', prevState.visibleRows.length+this.rowLimit);
             //   let length = prevState.visibleRows.length;
             let visibleRows = prevState.data.slice(startSplice, startSplice + noOfRowsInView + 5);
-            console.log('visibleRows: ', visibleRows);
             return { visibleRows }
         });
     }
 
     onChecked(title) {
-        console.log('onChecked: ');
-        console.log('title: ', title);
+        // console.log('onChecked: ');
+        // console.log('title: ', title);
 
     }
 
@@ -85,7 +83,6 @@ class InfiniteList extends Component {
     }
 
     onDragStart(e) {
-        console.log('e: ', e);
         let id = e.currentTarget.dataset.id;
         let key = e.currentTarget.dataset.key;
         e.dataTransfer.effectAllowed = 'move';
@@ -104,8 +101,10 @@ class InfiniteList extends Component {
     onDrop(e) {
         let to = { id: e.currentTarget.dataset.id, key: e.currentTarget.dataset.key };
         let from = JSON.parse(e.dataTransfer.getData('from'));
+        console.log('from: ', from);
+        console.log('to: ', to);
 
-        // If Swap doesn't occur in between siblings, return nothing.
+        // If Drag n Drop doesn't occur in-between siblings, return nothing.
         if (to.key.split('-').slice(0, -2).join('-') !== from.key.split('-').slice(0, -2).join('-'))
             return;
 
@@ -125,13 +124,19 @@ class InfiniteList extends Component {
                     return lastLoop ? dummy[value] : dummy[value].children
                 }
             })
-            target.children = target.children.swap(from.id, to.id);
-            changeKey(target.children[from.id], from.key);
-            changeKey(target.children[to.id], to.key);
+            target.children = target.children.move(from.id, to.id);
+            for (let i = to.id; i < target.children.length; i++) {
+                let splitArr = target.children[i].key.split('-');
+                splitArr[splitArr.length - 2] = i;
+                changeKey(target.children[i], splitArr.join('-'));
+            }
         } else {
-            let treeData = this.state.treeData.swap(from.id, to.id);
-            changeKey(treeData[from.id], from.key);
-            changeKey(treeData[to.id], to.key);
+            let treeData = this.state.treeData.move(from.id, to.id);
+            for (let i = to.id; i < treeData.length; i++) {
+                let splitArr = treeData[i].key.split('-');
+                splitArr[splitArr.length - 2] = i;
+                changeKey(treeData[i], splitArr.join('-'));
+            }
         }
         this.setState({ treeData });
         e.stopPropagation()
@@ -139,13 +144,17 @@ class InfiniteList extends Component {
 
     render() {
 
-        // Simple JSON Tree
-        let jsonTree = Object.keys(TreeData).map(item => <TreeRow title={item} withArrow={TreeData[item]} />)
-
-        // JSON Tree with Expand Collapse
+        /****************** Tree - Start ****************/
+        // JSON Tree with Expand Collapse, Drag n Drop
         let tree = folderTree(this.state.treeData, this.onChecked, this.onExpandCollapse, this.onDragStart, this.onDragEnd, this.onDragOver, this.onDrop);
-        console.log('restructure(TreeData): ', JSON.stringify(restructure(TreeData)));
 
+        // Simple JSON Tree - No Expand Collapse, Drag n Drop
+        let jsonTree = Object.keys(TreeData).map(item => <TreeRow title={item} withArrow={TreeData[item]} />)
+        /****************** Tree - End ****************/
+
+
+
+        /****************** Infinite List - Start ****************/
         // FAB
         let fab = <div className="fab">
             <span onClick={this.scrollToTop} className="up-arrow"></span>
@@ -163,16 +172,15 @@ class InfiniteList extends Component {
                 {rows}
             </div>
         </div>
+        /****************** Infinite List - End ****************/
 
-        return (<div className='infinite-list' style={{ height: window.innerHeight - 68 }}>
 
-            <div className="header">
-                Tree POC
+        return (
+            <div className='infinite-list' style={{ height: window.innerHeight - 68 }}>
+                <div className="header"> Tree POC </div>
+                {tree}
             </div>
-
-            {tree}
-
-        </div>);
+        );
     }
 }
 
@@ -184,13 +192,13 @@ function folderTree(treeData, onChecked, onExpandCollapse, onDragStart, onDragEn
         <ul>
             {treeData.map((item, i) => {
                 const { hasChildren, children, expanded, title, key } = item
-                console.log('key: ', key);
                 return (
-                    <li data-id={i} data-key={key} {...{ onDragStart, onDragEnd, onDragOver, onDrop }} draggable>
+                    <li data-id={i} data-key={key} key={'parent-list' + i} {...{ onDragStart, onDragEnd, onDragOver, onDrop }} draggable>
                         <ul key={'Tree-' + title + '-' + i}>
                             <li>
                                 <TreeRow withArrow={hasChildren} {...{ title, Key: key, expanded, onChecked, onExpandCollapse }} />
                             </li>
+                            {/* Show Children only if it's expanded */}
                             {expanded && folderTree(children, onChecked, onExpandCollapse, onDragStart, onDragEnd, onDragOver, onDrop)}
                         </ul>
                     </li>
@@ -200,10 +208,48 @@ function folderTree(treeData, onChecked, onExpandCollapse, onDragStart, onDragEn
     )
 }
 
+function restructure(json, index) {
+    if (typeof json === 'object') {
+        if (Array.isArray(json)) {
+            return json.map((item, i) => { return { children: null, title: item, key: index + '-' + i + '-key', expanded: false, hasChildren: false, selected: false } });
+        } else if (!json || typeof json === 'string') {
+            return;
+        } else {
+            return Object.keys(json).map((item, i) => {
+                let children = restructure(json[item], index + '-' + i);
+                return { children, title: item, key: index + '-' + i + '-key', selected: false, hasChildren: !!children, expanded: false }
+            })
+        }
+    }
+}
+
+function changeKey(obj, key) {
+    let actualKey = key.split('key')[0];
+    let length = actualKey.length;
+    obj.key = actualKey + obj.key.substr(length);
+    if (obj.children)
+        obj.children = obj.children.map(item => changeKey(item, key));
+    return obj;
+}
+
+Array.prototype.swap = function (x, y) {
+    var b = this[x];
+    this[x] = this[y];
+    this[y] = b;
+    return this;
+}
+
+Array.prototype.move = function (fromIndex, toIndex) {
+    let element = this[fromIndex];
+    this.splice(fromIndex, 1);
+    this.splice(toIndex, 0, element);
+    return this;
+}
+
+// Not Used
 const jsonTree = (treeData) => {
 
     if (Array.isArray(treeData)) {
-        console.log('If Array ', treeData);
         return <ul> {treeData.map(item => <li> <TreeRow title={item} withArrow={true} /> </li>)} </ul>;
     } else {
         if (!treeData)
@@ -232,54 +278,6 @@ const jsonTree = (treeData) => {
         });
     }
 
-}
-
-// function restructure(json) {
-//     if (typeof json === 'object') {
-//         if (Array.isArray(json)) {
-//             return json.map(item => { return { hasChild: false, title: item, expanded: false, child: null } });
-//         } else if (!json || typeof json === 'string') {
-//             return;
-//         } else {
-//             return Object.keys(json).map(item => {
-//                 let children = restructure(json[item]);
-//                 let hasChild = !!children;
-//                 return { hasChild, children, title: item, expanded: hasChild ? true : false }
-//             })
-//         }
-//     }
-// }
-
-function restructure(json, index) {
-    if (typeof json === 'object') {
-        if (Array.isArray(json)) {
-            return json.map((item, i) => { return { children: null, title: item, key: index + '-' + i + '-key', expanded: false, hasChildren: false, selected: false } });
-        } else if (!json || typeof json === 'string') {
-            return;
-        } else {
-            return Object.keys(json).map((item, i) => {
-                let children = restructure(json[item], index + '-' + i);
-                return { children, title: item, key: index + '-' + i + '-key', selected: false, hasChildren: !!children, expanded: false }
-            })
-        }
-    }
-}
-
-function changeKey(obj, key) {
-    let actualKey = key.split('key')[0];
-    let length = actualKey.length;
-    obj.key = actualKey + obj.key.substr(length);
-    console.log('key', key);
-    if (obj.children)
-        obj.children = obj.children.map(item => changeKey(item, key));
-    return obj;
-}
-
-Array.prototype.swap = function (x, y) {
-    var b = this[x];
-    this[x] = this[y];
-    this[y] = b;
-    return this;
 }
 
 export default InfiniteList;
