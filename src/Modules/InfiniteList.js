@@ -18,6 +18,10 @@ class InfiniteList extends Component {
         this.onScroll = this.onScroll.bind(this);
         this.onChecked = this.onChecked.bind(this);
         this.onExpandCollapse = this.onExpandCollapse.bind(this);
+        this.onDragStart = this.onDragStart.bind(this);
+        this.onDragEnd = this.onDragEnd.bind(this);
+        this.onDrop = this.onDrop.bind(this);
+        this.onDragOver = this.onDragOver.bind(this);
     }
     componentDidMount() {
         fetch('https://jsonplaceholder.typicode.com/photos')
@@ -64,8 +68,6 @@ class InfiniteList extends Component {
     }
 
     onExpandCollapse(key) {
-        console.log('onExpandCollapse: ');
-        console.log('title: ', key);
         let Key = key.split('-');
         Key.length = Key.length - 1;
         let treeData = this.state.treeData;
@@ -79,10 +81,32 @@ class InfiniteList extends Component {
             }
         })
         target.expanded = !target.expanded;
-        console.log('treeData: ', treeData);
         this.setState({ treeData })
+    }
 
+    onDragStart(e) {
+        console.log('e: ', e);
+        let id = e.currentTarget.dataset.id;
+        let key = e.currentTarget.dataset.key;
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('from', JSON.stringify({id, key}));
+    }
 
+    onDragEnd(e) {
+        
+    }
+
+    onDragOver(e) {
+        e.preventDefault();
+    }
+
+    onDrop(e) {
+        let to = {id: e.currentTarget.dataset.id, key: e.currentTarget.dataset.key};
+        let from = JSON.parse(e.dataTransfer.getData('from'));
+        let treeData = this.state.treeData.swap(from.id, to.id);
+        changeKey(treeData[from.id], from.key);
+        changeKey(treeData[to.id], to.key);
+        this.setState((prevState) => {return {treeData}});
     }
 
     render() {
@@ -91,7 +115,7 @@ class InfiniteList extends Component {
         let jsonTree = Object.keys(TreeData).map(item => <TreeRow title={item} withArrow={TreeData[item]} />)
 
         // JSON Tree with Expand Collapse
-        let tree = folderTree(this.state.treeData, this.onChecked, this.onExpandCollapse);
+        let tree = folderTree(this.state.treeData, this.onChecked, this.onExpandCollapse, this.onDragStart, this.onDragEnd, this.onDragOver, this.onDrop);
         console.log('restructure(TreeData): ', JSON.stringify(restructure(TreeData)));
 
         // FAB
@@ -124,7 +148,7 @@ class InfiniteList extends Component {
     }
 }
 
-function folderTree(treeData, onChecked, onExpandCollapse) {
+function folderTree(treeData, onChecked, onExpandCollapse, onDragStart, onDragEnd, onDragOver, onDrop) {
     if (!treeData)
         return;
 
@@ -134,7 +158,7 @@ function folderTree(treeData, onChecked, onExpandCollapse) {
                 const { hasChildren, children, expanded, title, key } = item
                 console.log('key: ', key);
                 return (
-                    <li>
+                    <li data-id={i} data-key={key} {...{onDragStart, onDragEnd, onDragOver, onDrop}} draggable>
                         <ul key={'Tree-' + title + '-' + i}>
                             <li>
                                 <TreeRow withArrow={hasChildren} {...{ title, Key: key, expanded, onChecked, onExpandCollapse }} />
@@ -207,10 +231,27 @@ function restructure(json, index) {
         } else {
             return Object.keys(json).map((item, i) => {
                 let children = restructure(json[item], index + '-' + i);
-                return { children, title: item, key: index + '-' + i + '-key', selected: false, hasChildren: !!children, expanded: children ? true : false }
+                return { children, title: item, key: index + '-' + i + '-key', selected: false, hasChildren: !!children, expanded: false }
             })
         }
     }
 }
+
+function changeKey(obj, key){
+	let actualKey = key.split('key')[0];
+	let length = actualKey.length;
+	obj.key = actualKey + obj.key.substr(length);
+	console.log('key', key);
+	if(obj.children)
+	obj.children = obj.children.map(item => changeKey(item, key));
+	return obj;
+}
+
+Array.prototype.swap = function (x,y) {
+    var b = this[x];
+    this[x] = this[y];
+    this[y] = b;
+    return this;
+  }
 
 export default InfiniteList;
