@@ -89,11 +89,12 @@ class InfiniteList extends Component {
         let id = e.currentTarget.dataset.id;
         let key = e.currentTarget.dataset.key;
         e.dataTransfer.effectAllowed = 'move';
-        e.dataTransfer.setData('from', JSON.stringify({id, key}));
+        e.dataTransfer.setData('from', JSON.stringify({ id, key }));
+        e.stopPropagation()
     }
 
     onDragEnd(e) {
-        
+
     }
 
     onDragOver(e) {
@@ -101,12 +102,39 @@ class InfiniteList extends Component {
     }
 
     onDrop(e) {
-        let to = {id: e.currentTarget.dataset.id, key: e.currentTarget.dataset.key};
+        let to = { id: e.currentTarget.dataset.id, key: e.currentTarget.dataset.key };
         let from = JSON.parse(e.dataTransfer.getData('from'));
-        let treeData = this.state.treeData.swap(from.id, to.id);
-        changeKey(treeData[from.id], from.key);
-        changeKey(treeData[to.id], to.key);
-        this.setState((prevState) => {return {treeData}});
+
+        // If Swap doesn't occur in between siblings, return nothing.
+        if (to.key.split('-').slice(0, -2).join('-') !== from.key.split('-').slice(0, -2).join('-'))
+            return;
+
+        let Key = from.key.split('-');
+        Key.length = Key.length - 2;
+        let treeData = this.state.treeData;
+
+        // If - Child Elements Swap, Else - Parent Elements Swap
+        if (Key.length > 1) {
+            let target = Key.reduce((dummy, value, count, Key) => {
+                let length = Key.length - 1;
+                let lastLoop = count === length;
+                console.log('lastLoop: ', lastLoop);
+                if (count === 1) {
+                    return lastLoop ? treeData[value] : treeData[value].children
+                } else {
+                    return lastLoop ? dummy[value] : dummy[value].children
+                }
+            })
+            target.children = target.children.swap(from.id, to.id);
+            changeKey(target.children[from.id], from.key);
+            changeKey(target.children[to.id], to.key);
+        } else {
+            let treeData = this.state.treeData.swap(from.id, to.id);
+            changeKey(treeData[from.id], from.key);
+            changeKey(treeData[to.id], to.key);
+        }
+        this.setState({ treeData });
+        e.stopPropagation()
     }
 
     render() {
@@ -158,12 +186,12 @@ function folderTree(treeData, onChecked, onExpandCollapse, onDragStart, onDragEn
                 const { hasChildren, children, expanded, title, key } = item
                 console.log('key: ', key);
                 return (
-                    <li data-id={i} data-key={key} {...{onDragStart, onDragEnd, onDragOver, onDrop}} draggable>
+                    <li data-id={i} data-key={key} {...{ onDragStart, onDragEnd, onDragOver, onDrop }} draggable>
                         <ul key={'Tree-' + title + '-' + i}>
                             <li>
                                 <TreeRow withArrow={hasChildren} {...{ title, Key: key, expanded, onChecked, onExpandCollapse }} />
                             </li>
-                            {expanded && folderTree(children, onChecked, onExpandCollapse)}
+                            {expanded && folderTree(children, onChecked, onExpandCollapse, onDragStart, onDragEnd, onDragOver, onDrop)}
                         </ul>
                     </li>
                 )
@@ -237,21 +265,21 @@ function restructure(json, index) {
     }
 }
 
-function changeKey(obj, key){
-	let actualKey = key.split('key')[0];
-	let length = actualKey.length;
-	obj.key = actualKey + obj.key.substr(length);
-	console.log('key', key);
-	if(obj.children)
-	obj.children = obj.children.map(item => changeKey(item, key));
-	return obj;
+function changeKey(obj, key) {
+    let actualKey = key.split('key')[0];
+    let length = actualKey.length;
+    obj.key = actualKey + obj.key.substr(length);
+    console.log('key', key);
+    if (obj.children)
+        obj.children = obj.children.map(item => changeKey(item, key));
+    return obj;
 }
 
-Array.prototype.swap = function (x,y) {
+Array.prototype.swap = function (x, y) {
     var b = this[x];
     this[x] = this[y];
     this[y] = b;
     return this;
-  }
+}
 
 export default InfiniteList;
