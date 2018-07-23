@@ -1,5 +1,5 @@
 .infinite-list{
-    padding: 68px 0px 16px;
+    padding: 68px 0px 0px;
     background: whitesmoke
 }
 
@@ -44,10 +44,11 @@
     justify-content: center;
     font-size: 18px;
 }
-.infinite-list .up-arrow{
-    border: solid white;
-    border-width: 0 3px 3px 0;
-    display: inline-block;
-    padding: 5px;
-    transform: rotate(-135deg);
+
+.infinite-list ul{
+    list-style-type: none!important;
+}
+
+.infinite-list ul{
+    padding-left: 10px;
 }

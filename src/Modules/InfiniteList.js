@@ -1,30 +1,33 @@
 import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
 import ListRow from "../Components/ListRow";
 import TreeRow from "../Components/TreeRow";
+import TreeData from "./TreeData.json";
+import Tree, { TreeNode } from 'rc-tree';
 import './InfiniteList.css'
+import 'rc-tree/assets/index.css';
 class InfiniteList extends Component {
     constructor(props) {
         super(props);
         this.state = {
             visibleRows: [],
             data: [],
+            treeData: restructure(TreeData, 0),
         }
         this.rowLimit = 100;
         this.manualScrollCapture = 0;
-        this.onScroll = this.onScroll.bind(this); 
+        this.onScroll = this.onScroll.bind(this);
+        this.onChecked = this.onChecked.bind(this);
+        this.onExpandCollapse = this.onExpandCollapse.bind(this);
     }
     componentDidMount() {
         fetch('https://jsonplaceholder.typicode.com/photos')
             .then(response => response.json())
             .then(json => {
-                let data = json.map((item, i) => {return {value: item.title.substr(0, 35), index: i+1}})
-                let visibleRows = data.slice(0, (window.innerHeight/68)+10);
+                let data = json.map((item, i) => { return { value: item.title.substr(0, 35), index: i + 1 } })
+                let visibleRows = data.slice(0, (window.innerHeight / 68) + 10);
                 data.length = 300;
                 this.setState({ data, visibleRows })
             })
-            // let elem = document.getElementById('wrapper');
-            let elem = window;
         // this.container.addEventListener('scroll', this.onScroll);
     }
 
@@ -32,15 +35,15 @@ class InfiniteList extends Component {
         // this.container.removeEventListener('scroll', this.onScroll, false);
     }
 
-    onScroll(event){
+    onScroll(event) {
         let scrollTop = this.container.scrollTop
         let height = this.container.offsetHeight
         let scrollHeight = this.container.scrollHeight
         let r = Math.round;
-        var startSplice = r(scrollTop/68);
+        var startSplice = r(scrollTop / 68);
         startSplice -= 5;
         startSplice = startSplice < 0 ? 0 : startSplice;
-        var noOfRowsInView = r(height/68);
+        var noOfRowsInView = r(height / 68);
         console.log('noOfRowsInView: ', noOfRowsInView);
 
         this.setState(prevState => {
@@ -54,28 +57,159 @@ class InfiniteList extends Component {
         });
     }
 
+    onChecked(title) {
+        console.log('onChecked: ');
+        console.log('title: ', title);
+
+    }
+
+    onExpandCollapse(key) {
+        console.log('onExpandCollapse: ');
+        console.log('title: ', key);
+        let Key = key.split('-');
+        Key.length = Key.length - 1;
+        let treeData = this.state.treeData;
+        let target = Key.reduce((dummy, value, count, Key) => {
+            let length = Key.length - 1;
+            let lastLoop = count === length;
+            if (count === 1) {
+                return lastLoop ? treeData[value] : treeData[value].children
+            } else {
+                return lastLoop ? dummy[value] : dummy[value].children
+            }
+        })
+        target.expanded = !target.expanded;
+        console.log('treeData: ', treeData);
+        this.setState({ treeData })
+
+
+    }
+
     render() {
-        let rows = this.state.visibleRows.map((item, i) => <ListRow data={item.value} key={item.index} index={item.index} style={{position: 'absolute', top: 68*(item.index-1), width: '100%'}} />)
-        return (<div className='infinite-list'>
-            {/* <div className="fab">
-                <span onClick={this.scrollToTop} className="up-arrow"></span>
-            </div> */}
+
+        // Simple JSON Tree
+        let jsonTree = Object.keys(TreeData).map(item => <TreeRow title={item} withArrow={TreeData[item]} />)
+
+        // JSON Tree with Expand Collapse
+        let tree = folderTree(this.state.treeData, this.onChecked, this.onExpandCollapse);
+        console.log('restructure(TreeData): ', JSON.stringify(restructure(TreeData)));
+
+        // FAB
+        let fab = <div className="fab">
+            <span onClick={this.scrollToTop} className="up-arrow"></span>
+        </div>
+
+        // Rows
+        let rows = this.state.visibleRows.map((item, i) => <ListRow data={item.value} key={item.index} index={item.index} style={{ position: 'absolute', top: 68 * (item.index - 1), width: '100%' }} />)
+
+        // List
+        let list = <div className="container" ref={input => { this.container = input }}>
+            <div className="wrapper"
+                id='wrapper'
+                onWheel={this.onWheel}
+                style={{ height: 68 * this.state.data.length }}>
+                {rows}
+            </div>
+        </div>
+
+        return (<div className='infinite-list' style={{ height: window.innerHeight - 68 }}>
+
             <div className="header">
-                Infinite List
+                Tree POC
             </div>
 
-            <TreeRow title={'ganesh'} />
+            {tree}
 
-            {/* <div className="container" ref={input=>{this.container = input}}>
-                <div className="wrapper" 
-                    id = 'wrapper'
-                     onWheel={this.onWheel} 
-                     style={{height: 68*this.state.data.length}} 
-                     >
-                    {rows}
-                </div>
-            </div> */}
         </div>);
+    }
+}
+
+function folderTree(treeData, onChecked, onExpandCollapse) {
+    if (!treeData)
+        return;
+
+    return (
+        <ul>
+            {treeData.map((item, i) => {
+                const { hasChildren, children, expanded, title, key } = item
+                console.log('key: ', key);
+                return (
+                    <li>
+                        <ul key={'Tree-' + title + '-' + i}>
+                            <li>
+                                <TreeRow withArrow={hasChildren} {...{ title, Key: key, expanded, onChecked, onExpandCollapse }} />
+                            </li>
+                            {expanded && folderTree(children, onChecked, onExpandCollapse)}
+                        </ul>
+                    </li>
+                )
+            })}
+        </ul>
+    )
+}
+
+const jsonTree = (treeData) => {
+
+    if (Array.isArray(treeData)) {
+        console.log('If Array ', treeData);
+        return <ul> {treeData.map(item => <li> <TreeRow title={item} withArrow={true} /> </li>)} </ul>;
+    } else {
+        if (!treeData)
+            return;
+        return Object.keys(treeData).map(item => {
+            if (Array.isArray(treeData[item])) {
+                return (
+                    <ul>
+                        <li>
+                            <TreeRow title={item} withArrow={true} />
+                        </li>
+                        {jsonTree(treeData[item])}
+                    </ul>)
+            } else {
+                return (
+                    <ul>
+                        <li>
+                            <TreeRow title={item} withArrow={true} />
+                        </li>
+                        <li>
+                            {jsonTree(treeData[item])}
+                        </li>
+                    </ul>
+                )
+            }
+        });
+    }
+
+}
+
+// function restructure(json) {
+//     if (typeof json === 'object') {
+//         if (Array.isArray(json)) {
+//             return json.map(item => { return { hasChild: false, title: item, expanded: false, child: null } });
+//         } else if (!json || typeof json === 'string') {
+//             return;
+//         } else {
+//             return Object.keys(json).map(item => {
+//                 let children = restructure(json[item]);
+//                 let hasChild = !!children;
+//                 return { hasChild, children, title: item, expanded: hasChild ? true : false }
+//             })
+//         }
+//     }
+// }
+
+function restructure(json, index) {
+    if (typeof json === 'object') {
+        if (Array.isArray(json)) {
+            return json.map((item, i) => { return { children: null, title: item, key: index + '-' + i + '-key', expanded: false, hasChildren: false, selected: false } });
+        } else if (!json || typeof json === 'string') {
+            return;
+        } else {
+            return Object.keys(json).map((item, i) => {
+                let children = restructure(json[item], index + '-' + i);
+                return { children, title: item, key: index + '-' + i + '-key', selected: false, hasChildren: !!children, expanded: children ? true : false }
+            })
+        }
     }
 }
 

@@ -1,10 +1,13 @@
 import React from 'react';
-import './ListRow.css'
+import './TreeRow.css'
 const TreeRow = (props) => {
-    return ( <div className="tree-row" style={props.style}>
-        <input type="checkbox" id="myCheck" onclick="myFunction()" />
-        {props.title}
-    </div> );
+    console.log('onchek', props);
+    const { title, Key, withArrow: hasChildren, expanded, onChecked, onExpandCollapse } = props;
+    return (<div className="tree-row" style={{ marginLeft: hasChildren ? '0px' : '13px' }}>
+        {hasChildren && <span className='symbol' onClick={() => onExpandCollapse(Key)}> <span className={expanded ? 'arrow-down' : 'arrow-right'} /> </span>}
+        <input type="checkbox" id="myCheck" onClick={() => onChecked(Key)} />
+        <span> {title} </span>
+    </div>);
 }
- 
+
 export default TreeRow;
