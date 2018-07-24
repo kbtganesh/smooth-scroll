@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import ListRow from "../Components/ListRow";
 import TreeRow from "../Components/TreeRow";
-import TreeData from "./TreeData.json";
+import TreeData from "./ReportsColumn.json";
 import Tree, { TreeNode } from 'rc-tree';
 import './InfiniteList.css'
 import 'rc-tree/assets/index.css';
@@ -59,9 +59,24 @@ class InfiniteList extends Component {
         });
     }
 
-    onChecked(title) {
-        // console.log('onChecked: ');
-        // console.log('title: ', title);
+    onChecked(key) {
+        console.log('key: ', key);
+        let Key = key.split('-');
+        Key.length = Key.length - 1;
+        let treeData = this.state.treeData;
+        let target = Key.reduce((dummy, value, count, Key) => {
+            let length = Key.length - 1;
+            let lastLoop = count === length;
+            if (count === 1) {
+                return lastLoop ? treeData[value] : treeData[value].children
+            } else {
+                return lastLoop ? dummy[value] : dummy[value].children
+            }
+        })
+
+        target.selected = !target.selected;
+        console.log('target.checked: ', target.selected);
+        this.setState({ treeData });
 
     }
 
@@ -125,14 +140,14 @@ class InfiniteList extends Component {
                 }
             })
             target.children = target.children.move(from.id, to.id);
-            for (let i = to.id; i < target.children.length; i++) {
+            for (let i = 0; i < target.children.length; i++) {
                 let splitArr = target.children[i].key.split('-');
                 splitArr[splitArr.length - 2] = i;
                 changeKey(target.children[i], splitArr.join('-'));
             }
         } else {
             let treeData = this.state.treeData.move(from.id, to.id);
-            for (let i = to.id; i < treeData.length; i++) {
+            for (let i = 0; i < treeData.length; i++) {
                 let splitArr = treeData[i].key.split('-');
                 splitArr[splitArr.length - 2] = i;
                 changeKey(treeData[i], splitArr.join('-'));
@@ -189,14 +204,14 @@ function folderTree(treeData, onChecked, onExpandCollapse, onDragStart, onDragEn
         return;
 
     return (
-        <ul>
+        <ul style={{paddingRight: '16px'}} >
             {treeData.map((item, i) => {
-                const { hasChildren, children, expanded, title, key } = item
+                const { hasChildren, children, expanded, selected, title, key } = item
                 return (
                     <li data-id={i} data-key={key} key={'parent-list' + i} {...{ onDragStart, onDragEnd, onDragOver, onDrop }} draggable>
                         <ul key={'Tree-' + title + '-' + i}>
                             <li>
-                                <TreeRow withArrow={hasChildren} {...{ title, Key: key, expanded, onChecked, onExpandCollapse }} />
+                                <TreeRow withArrow={hasChildren} {...{ title, Key: key, selected, expanded, onChecked, onExpandCollapse }} />
                             </li>
                             {/* Show Children only if it's expanded */}
                             {expanded && folderTree(children, onChecked, onExpandCollapse, onDragStart, onDragEnd, onDragOver, onDrop)}

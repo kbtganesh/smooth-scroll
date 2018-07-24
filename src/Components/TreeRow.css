@@ -1,6 +1,72 @@
-.tree-row .symbol{
+.tree-row{
+    padding: 8px;
+    margin: 4px;
+}
+
+.tree-row:hover{
+    background: #e0e2e6;
 }
 
 .tree-row .arrow-right, .tree-row .arrow-down{
     padding: 3px;
+}
+
+.tree-row input[type='checkbox']{
+    opacity: 0;
+    position: absolute;
+    left: -999px;
+}
+
+.tree-row label::before{
+    content: "";
+    display: inline-block;
+    height: 16px;
+    width: 16px;
+    border: 1px solid #dfdfdf;   
+
+    border-radius: 3px;
+    top: 0px;
+    left: 5px;
+}
+
+.tree-row label::after {
+    content: "";
+    display: inline-block;
+    height: 4px;
+    width: 9px;
+    border-left: 1px solid;
+    border-bottom: 1px solid;
+    transform: rotate(-45deg);
+
+    color: white;
+    left: 9px;
+    top: 5px;
+}
+
+.tree-row label::before,
+.tree-row label::after {
+    position: absolute;
+}
+
+.tree-row label {
+    position: absolute;
+    display: inline-block;
+    padding-left: 30px;
+    font-size: 14px;
+    font-family: serif;
+    width: 100%;
+}
+
+/*Hide the checkmark by default*/
+.tree-row input[type="checkbox"] + label::after {
+    content: none;
+}
+
+/*Unhide the checkmark on the checked state*/
+.tree-row input[type="checkbox"]:checked + label::after {
+    content: "";
+}
+
+.tree-row input[type="checkbox"]:checked + label::before {
+    background: #37ad37;
 }

@@ -1,11 +1,11 @@
 import React from 'react';
 import './TreeRow.css'
 const TreeRow = (props) => {
-    const { title, Key, withArrow: hasChildren, expanded, onChecked, onExpandCollapse } = props;
-    return (<div className="tree-row" style={{ marginLeft: hasChildren ? '0px' : '13px' }}>
-        {hasChildren && <span className='symbol' onClick={() => onExpandCollapse(Key)}> <span className={expanded ? 'arrow-down' : 'arrow-right'} /> </span>}
-        <input type="checkbox" id="myCheck" onClick={() => onChecked(Key)} />
-        <span> {title} </span>
+    const { title, Key, withArrow: hasChildren, expanded, selected, onChecked, onExpandCollapse } = props;
+    return (<div className="tree-row" style={{ }}>
+        <span id={'symbol-'+Key} className='symbol' style={{visibility: hasChildren?'inherit':'hidden'}} onClick={() => onExpandCollapse(Key)}> <span className={expanded ? 'arrow-down' : 'arrow-right'} /> </span>
+        <input type="checkbox" id={'check-box-'+Key} checked={!!selected} onClick={() => onChecked(Key)} />
+        <label style={{fontWeight: hasChildren?'bold':'normal'}} onClick={() => hasChildren?onExpandCollapse(Key):onChecked(Key)}> {title} </label>
     </div>);
 }
 
