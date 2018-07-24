@@ -206,12 +206,12 @@ function folderTree(treeData, onChecked, onExpandCollapse, onDragStart, onDragEn
     return (
         <ul style={{paddingRight: '16px'}} >
             {treeData.map((item, i) => {
-                const { hasChildren, children, expanded, selected, title, key } = item
+                const { hasChildren, children, childrenCount, expanded, selected, title, key } = item
                 return (
                     <li data-id={i} data-key={key} key={'parent-list' + i} {...{ onDragStart, onDragEnd, onDragOver, onDrop }} draggable>
                         <ul key={'Tree-' + title + '-' + i}>
-                            <li>
-                                <TreeRow withArrow={hasChildren} {...{ title, Key: key, selected, expanded, onChecked, onExpandCollapse }} />
+                            <li style={{paddingLeft: hasChildren?'20px':'0px'}} >
+                                <TreeRow withArrow={hasChildren} {...{ title, Key: key, childrenCount, selected, expanded, onChecked, onExpandCollapse }} />
                             </li>
                             {/* Show Children only if it's expanded */}
                             {expanded && folderTree(children, onChecked, onExpandCollapse, onDragStart, onDragEnd, onDragOver, onDrop)}
@@ -232,7 +232,7 @@ function restructure(json, index) {
         } else {
             return Object.keys(json).map((item, i) => {
                 let children = restructure(json[item], index + '-' + i);
-                return { children, title: item, key: index + '-' + i + '-key', selected: false, hasChildren: !!children, expanded: false }
+                return { children, title: item, key: index + '-' + i + '-key', selected: false, hasChildren: !!children, childrenCount: !!children?children.length:0, expanded: false }
             })
         }
     }
