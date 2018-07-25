@@ -12,6 +12,7 @@ class InfiniteList extends Component {
             visibleRows: [],
             data: [],
             treeData: restructure(TreeData, 0),
+            droppedItems: [],
         }
         this.rowLimit = 100;
         this.manualScrollCapture = 0;
@@ -22,6 +23,7 @@ class InfiniteList extends Component {
         this.onDragEnd = this.onDragEnd.bind(this);
         this.onDrop = this.onDrop.bind(this);
         this.onDragOver = this.onDragOver.bind(this);
+        this.onDropWorkArea = this.onDropWorkArea.bind(this);
     }
     componentDidMount() {
         fetch('https://jsonplaceholder.typicode.com/photos')
@@ -100,8 +102,9 @@ class InfiniteList extends Component {
     onDragStart(e) {
         let id = e.currentTarget.dataset.id;
         let key = e.currentTarget.dataset.key;
+        let title = e.currentTarget.dataset.title;
         e.dataTransfer.effectAllowed = 'move';
-        e.dataTransfer.setData('from', JSON.stringify({ id, key }));
+        e.dataTransfer.setData('from', JSON.stringify({ id, key, title }));
         e.stopPropagation()
     }
 
@@ -157,6 +160,13 @@ class InfiniteList extends Component {
         e.stopPropagation()
     }
 
+    onDropWorkArea(e) {
+        const {title} = JSON.parse(e.dataTransfer.getData('from'));
+        this.setState(prevState => ({
+            droppedItems: [...prevState.droppedItems, title]
+          }))
+    }
+
     render() {
 
         /****************** Tree - Start ****************/
@@ -167,7 +177,7 @@ class InfiniteList extends Component {
         let jsonTree = Object.keys(TreeData).map(item => <TreeRow title={item} withArrow={TreeData[item]} />)
         /****************** Tree - End ****************/
 
-
+        let droppedItems = this.state.droppedItems.map(item => <span className='card'> {item} </span>)
 
         /****************** Infinite List - Start ****************/
         // FAB
@@ -191,9 +201,14 @@ class InfiniteList extends Component {
 
 
         return (
-            <div className='infinite-list' style={{ height: window.innerHeight - 68 }}>
+            <div className='infinite-list' style={{ height: window.innerHeight - 64 }}>
                 <div className="header"> Tree POC </div>
-                {tree}
+                    <div className="left-panel">
+                        {tree}
+                    </div>
+                    <div className="work-area"  onDragOver={(e)=>{console.log('ondrag');e.preventDefault()}} onDrop={this.onDropWorkArea}>
+                        {droppedItems}
+                    </div>
             </div>
         );
     }
@@ -204,13 +219,13 @@ function folderTree(treeData, onChecked, onExpandCollapse, onDragStart, onDragEn
         return;
 
     return (
-        <ul style={{paddingRight: '16px'}} >
+        <ul style={{ paddingRight: '16px' }} >
             {treeData.map((item, i) => {
                 const { hasChildren, children, childrenCount, expanded, selected, title, key } = item
                 return (
-                    <li data-id={i} data-key={key} key={'parent-list' + i} {...{ onDragStart, onDragEnd, onDragOver, onDrop }} draggable>
+                    <li data-id={i} data-key={key} data-title={title} key={'parent-list' + i} {...{ onDragStart, onDragEnd, onDragOver, onDrop }} draggable>
                         <ul key={'Tree-' + title + '-' + i}>
-                            <li style={{paddingLeft: hasChildren?'20px':'0px'}} >
+                            <li style={{ paddingLeft: hasChildren ? '20px' : '0px' }} >
                                 <TreeRow withArrow={hasChildren} {...{ title, Key: key, childrenCount, selected, expanded, onChecked, onExpandCollapse }} />
                             </li>
                             {/* Show Children only if it's expanded */}
@@ -232,7 +247,7 @@ function restructure(json, index) {
         } else {
             return Object.keys(json).map((item, i) => {
                 let children = restructure(json[item], index + '-' + i);
-                return { children, title: item, key: index + '-' + i + '-key', selected: false, hasChildren: !!children, childrenCount: !!children?children.length:0, expanded: false }
+                return { children, title: item, key: index + '-' + i + '-key', selected: false, hasChildren: !!children, childrenCount: !!children ? children.length : 0, expanded: false }
             })
         }
     }

@@ -23,7 +23,7 @@
     display: inline-block;
     height: 16px;
     width: 16px;
-    border: 1px solid #dfdfdf;   
+    border: 1px solid #8e8e8e;   
 
     border-radius: 3px;
     top: 0px;
@@ -55,7 +55,6 @@
     padding-left: 30px;
     font-size: 14px;
     font-family: serif;
-    width: 100%;
 }
 
 /*Hide the checkmark by default*/

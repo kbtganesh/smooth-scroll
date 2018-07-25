@@ -1,6 +1,7 @@
 .infinite-list{
-    padding: 68px 0px 0px;
-    background: whitesmoke
+    padding: 64px 0px 0px;
+    background: whitesmoke;
+    display: flex;
 }
 
 .infinite-list .header{
@@ -15,6 +16,15 @@
     font-size: 24px;
     color: white;
     font-family: cursive;
+}
+
+.infinite-list .left-panel{
+    flex: 4;
+}
+
+.infinite-list .work-area{
+    background: white;
+    flex: 10;
 }
 
 .infinite-list .container{
@@ -51,4 +61,16 @@
 
 .infinite-list ul{
     padding-left: 10px;
+}
+
+.infinite-list .card{
+    padding: 16px;
+    display: inline-block;
+    background: whitesmoke;
+    margin: 8px;
+    width: 100px;
+    text-align: center;
+    border-radius: 5px;
+    box-shadow: 0px 1px 10px -4px slategrey;
+    font-size: 14px;
 }

@@ -1,18 +1,17 @@
 {
-  "Purchase Order": {
-      "PR Number": null,
-      "PR Date": null,
-      "Requester's Name": null,
-      "Justification for Purchase": null,
-      "PR Line Items": {
-          "Item Description": null,
-          "Quantity": null,
-          "Unit Price": null,
-          "Item Total": null
-      },
-      "City": null,
-      "Total Amount": null,
-      "Justification for Purchase": null,
-      "Workflow Data": null
-  }
+    "Purchase Order": {
+        "PR Number": null,
+        "PR Date": null,
+        "PR Line Items": {
+            "Item Description": null,
+            "Quantity": null,
+            "Unit Price": null,
+            "Item Total": null
+        },
+        "City": null,
+        "Total Amount": null,
+        "Requester's Name": null,
+        "Justification for Purchase": null,
+        "Workflow Data": null
+    }
 }
