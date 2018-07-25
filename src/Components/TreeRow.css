@@ -3,6 +3,17 @@
     margin: 4px;
 }
 
+.tree-row .count{
+    padding: 0px 4px;
+    margin: 8px;
+    background: #33a9fd;
+    font-size: 13px;
+    border-radius: 5px;
+    color: white;
+    font-weight: lighter;
+    font-family: monospace;
+}
+
 .tree-row:hover{
     background: #e0e2e6;
 }

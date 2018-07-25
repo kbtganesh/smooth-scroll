@@ -13,5 +13,8 @@
         "Requester's Name": null,
         "Justification for Purchase": null,
         "Workflow Data": null
+    },
+    "Report": {
+        "Quantity": null
     }
 }

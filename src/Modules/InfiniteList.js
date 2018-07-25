@@ -3,6 +3,7 @@ import ListRow from "../Components/ListRow";
 import TreeRow from "../Components/TreeRow";
 import TreeData from "./ReportsColumn.json";
 import Tree, { TreeNode } from 'rc-tree';
+import ReactDOM from 'react-dom';
 import './InfiniteList.css'
 import 'rc-tree/assets/index.css';
 class InfiniteList extends Component {
@@ -82,8 +83,9 @@ class InfiniteList extends Component {
         let title = e.currentTarget.dataset.title;
         e.dataTransfer.effectAllowed = 'move';
         e.dataTransfer.setData('from', JSON.stringify({ id, key, title }));
-        // let img = (<span className='card'> {title} </span>)
-        // e.dataTransfer.setDragImage(img, 0, 0);
+        // let img = ReactDOM.render(<span className='card'>{title}</span>, document.getElementById(key));
+        let img = document.getElementById(key);
+        e.dataTransfer.setDragImage(img, 100, 0);
         e.stopPropagation()
     }
 
@@ -207,6 +209,7 @@ class InfiniteList extends Component {
         return (
             <div className='infinite-list' style={{ height: window.innerHeight - 64 }}>
                 <div className="header"> Tree POC </div>
+                <div style={{visibility: 'hidden'}} id="drag-img"></div>
                 <div className="left-panel">
                     {tree}
                 </div>
@@ -218,6 +221,24 @@ class InfiniteList extends Component {
     }
 }
 
+function countSelected(arr){
+    let count = 0;
+    if(Array.isArray(arr))
+	arr.forEach(item => {
+        // console.log('kbt- title: ', item.title);
+		if(item.hasChildren && item.children){
+            console.log('kbt- recursive: ', count, item.children);
+			count = count + countSelected(item.children, 0);
+		}else{
+			if(item.selected){
+                console.log('kbt- item selected', count, item.title);
+                count = count+1;
+            }
+		}
+	})
+	return count;
+}
+
 function folderTree(treeData, onChecked, onExpandCollapse, onDragStart, onDragEnd, onDragOver, onDrop) {
     if (!treeData)
         return;
@@ -225,13 +246,18 @@ function folderTree(treeData, onChecked, onExpandCollapse, onDragStart, onDragEn
     return (
         <ul style={{ paddingRight: '16px' }} >
             {treeData.map((item, i) => {
-                const { hasChildren, children, childrenCount, expanded, selected, title, key } = item
+                const { hasChildren, children, expanded, selected, title, key } = item
+                let childrenCount = 0;
+                // Check count only for 1st layer Parent Nodes.
+                if(key.split('-').length === 3)
+                childrenCount = countSelected(children);
                 return (
                     <li data-id={i} data-key={key} data-title={title} key={'parent-list' + i} {...{ onDragStart, onDragEnd, onDragOver, onDrop }} draggable>
                         <ul key={'Tree-' + title + '-' + i}>
                             <li style={{ paddingLeft: hasChildren ? '20px' : '0px' }} >
                                 <TreeRow withArrow={hasChildren} {...{ title, Key: key, childrenCount, selected, expanded, onChecked, onExpandCollapse }} />
                             </li>
+                            {console.log('children', JSON.stringify(item))}
                             {/* Show Children only if it's expanded */}
                             {expanded && folderTree(children, onChecked, onExpandCollapse, onDragStart, onDragEnd, onDragOver, onDrop)}
                         </ul>
@@ -251,7 +277,7 @@ function restructure(json, index) {
         } else {
             return Object.keys(json).map((item, i) => {
                 let children = restructure(json[item], index + '-' + i);
-                return { children, title: item, key: index + '-' + i + '-key', selected: false, hasChildren: !!children, childrenCount: !!children ? children.length : 0, expanded: false }
+                return { children, title: item, key: index + '-' + i + '-key', selected: false, hasChildren: !!children, childrenCount: 0, expanded: false }
             })
         }
     }
