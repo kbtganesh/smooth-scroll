@@ -24,6 +24,8 @@ class InfiniteList extends Component {
         this.onDrop = this.onDrop.bind(this);
         this.onDragOver = this.onDragOver.bind(this);
         this.onDropWorkArea = this.onDropWorkArea.bind(this);
+        this.getNodeUsingKey = this.getNodeUsingKey.bind(this);
+        this.columnAddOrRemove = this.columnAddOrRemove.bind(this);
     }
     componentDidMount() {
         fetch('https://jsonplaceholder.typicode.com/photos')
@@ -61,40 +63,15 @@ class InfiniteList extends Component {
         });
     }
 
-    onChecked(key) {
-        console.log('key: ', key);
-        let Key = key.split('-');
-        Key.length = Key.length - 1;
-        let treeData = this.state.treeData;
-        let target = Key.reduce((dummy, value, count, Key) => {
-            let length = Key.length - 1;
-            let lastLoop = count === length;
-            if (count === 1) {
-                return lastLoop ? treeData[value] : treeData[value].children
-            } else {
-                return lastLoop ? dummy[value] : dummy[value].children
-            }
-        })
-
-        target.selected = !target.selected;
-        console.log('target.checked: ', target.selected);
-        this.setState({ treeData });
-
+    onChecked(node) {
+        this.columnAddOrRemove(node, 'onCheck');
     }
 
     onExpandCollapse(key) {
         let Key = key.split('-');
         Key.length = Key.length - 1;
         let treeData = this.state.treeData;
-        let target = Key.reduce((dummy, value, count, Key) => {
-            let length = Key.length - 1;
-            let lastLoop = count === length;
-            if (count === 1) {
-                return lastLoop ? treeData[value] : treeData[value].children
-            } else {
-                return lastLoop ? dummy[value] : dummy[value].children
-            }
-        })
+        let target = this.getNodeUsingKey(Key);
         target.expanded = !target.expanded;
         this.setState({ treeData })
     }
@@ -105,6 +82,8 @@ class InfiniteList extends Component {
         let title = e.currentTarget.dataset.title;
         e.dataTransfer.effectAllowed = 'move';
         e.dataTransfer.setData('from', JSON.stringify({ id, key, title }));
+        // let img = (<span className='card'> {title} </span>)
+        // e.dataTransfer.setDragImage(img, 0, 0);
         e.stopPropagation()
     }
 
@@ -132,16 +111,7 @@ class InfiniteList extends Component {
 
         // If - Child Elements Swap, Else - Parent Elements Swap
         if (Key.length > 1) {
-            let target = Key.reduce((dummy, value, count, Key) => {
-                let length = Key.length - 1;
-                let lastLoop = count === length;
-                console.log('lastLoop: ', lastLoop);
-                if (count === 1) {
-                    return lastLoop ? treeData[value] : treeData[value].children
-                } else {
-                    return lastLoop ? dummy[value] : dummy[value].children
-                }
-            })
+            let target = this.getNodeUsingKey(Key);
             target.children = target.children.move(from.id, to.id);
             for (let i = 0; i < target.children.length; i++) {
                 let splitArr = target.children[i].key.split('-');
@@ -160,11 +130,45 @@ class InfiniteList extends Component {
         e.stopPropagation()
     }
 
+    columnAddOrRemove(columnNode, event) {
+        let Key = columnNode.key.split('-');
+        Key.length = Key.length - 1;
+        let treeData = this.state.treeData;
+        let target = this.getNodeUsingKey(Key);
+        let duplicate = this.state.droppedItems.find(item => item.key === columnNode.key)
+        if (target.selected) {
+            if (event === 'onDrop')
+                return;
+            target.selected = false
+            this.setState(prevState => {
+                let droppedItems = prevState.droppedItems;
+                droppedItems.splice(droppedItems.findIndex(item => item.key === columnNode.key), 1);
+                return { droppedItems, treeData }
+            })
+        } else {
+            target.selected = true;
+            this.setState(prevState => ({
+                droppedItems: [...prevState.droppedItems, columnNode], treeData
+            }))
+        }
+    }
+
+    getNodeUsingKey(Key) {
+        let treeData = this.state.treeData;
+        return Key.reduce((dummy, value, count, Key) => {
+            let length = Key.length - 1;
+            let lastLoop = count === length;
+            if (count === 1) {
+                return lastLoop ? treeData[value] : treeData[value].children
+            } else {
+                return lastLoop ? dummy[value] : dummy[value].children
+            }
+        })
+    }
+
     onDropWorkArea(e) {
-        const {title} = JSON.parse(e.dataTransfer.getData('from'));
-        this.setState(prevState => ({
-            droppedItems: [...prevState.droppedItems, title]
-          }))
+        const columnDropped = JSON.parse(e.dataTransfer.getData('from'));
+        this.columnAddOrRemove(columnDropped, 'onDrop');
     }
 
     render() {
@@ -177,7 +181,7 @@ class InfiniteList extends Component {
         let jsonTree = Object.keys(TreeData).map(item => <TreeRow title={item} withArrow={TreeData[item]} />)
         /****************** Tree - End ****************/
 
-        let droppedItems = this.state.droppedItems.map(item => <span className='card'> {item} </span>)
+        let droppedItems = this.state.droppedItems.map(item => <span className='card'> {item.title} </span>)
 
         /****************** Infinite List - Start ****************/
         // FAB
@@ -203,12 +207,12 @@ class InfiniteList extends Component {
         return (
             <div className='infinite-list' style={{ height: window.innerHeight - 64 }}>
                 <div className="header"> Tree POC </div>
-                    <div className="left-panel">
-                        {tree}
-                    </div>
-                    <div className="work-area"  onDragOver={(e)=>{console.log('ondrag');e.preventDefault()}} onDrop={this.onDropWorkArea}>
-                        {droppedItems}
-                    </div>
+                <div className="left-panel">
+                    {tree}
+                </div>
+                <div className="work-area" onDragOver={(e) => { e.preventDefault() }} onDrop={this.onDropWorkArea}>
+                    {droppedItems}
+                </div>
             </div>
         );
     }
