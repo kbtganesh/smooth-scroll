@@ -1,7 +1,20 @@
 .infinite-list{
     padding: 64px 0px 0px;
     background: whitesmoke;
-    display: flex;
+    display: grid;
+}
+
+.two-column{
+    grid-template-columns: 20% auto;
+}
+
+.three-column{
+    grid-template-columns: 20% 20% auto;
+}
+
+.infinite-list .creation{
+    background: #fafffe;
+    border-right: 1px solid #eaeaea;
 }
 
 .infinite-list .header{
@@ -19,12 +32,14 @@
 }
 
 .infinite-list .left-panel{
-    flex: 4;
+    background: #fafffe;
+    border-right: 1px solid #eaeaea;
+    /* flex: 4; */
 }
 
 .infinite-list .work-area{
     background: white;
-    flex: 10;
+    /* flex: 10; */
 }
 
 .infinite-list .container{
@@ -73,4 +88,59 @@
     border-radius: 5px;
     box-shadow: 0px 1px 10px -4px slategrey;
     font-size: 14px;
+}
+
+/* Attributes */
+
+.infinite-list .attribute-container{
+    padding: 20px;
+    /* background: red; */
+}
+
+
+.attribute-container .chart-thumbnail{
+    width: 40px;
+    height: 40px;
+    border: 1px solid lightgray;
+    background: white;
+}
+
+.attribute-container .chart-thumbnail-body{
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 40px);
+    grid-gap: 10px;
+    padding-top: 10px;
+}
+
+.attribute-container .settings{
+    margin-top: 20px;
+}
+
+.attribute-container .setting-component{
+    margin-top: 16px;
+    font-size: 14px;
+}
+
+.attribute-container .settings .dropped-columns-body{
+    border: 1px dashed gainsboro;
+    padding: 8px;
+    margin-top: 8px;
+    min-height: 20px;
+    color: rgb(88, 88, 88);
+}
+
+.attribute-container .settings .dropped-column{
+    position: relative;
+    padding: 5px;
+    margin-top: 5px;
+    background: #ccd4d2;
+}
+
+.attribute-container .settings .dropped-column .close{
+    position: absolute;
+    right: 5px;
+}
+
+.attribute-container .settings-body{
+
 }

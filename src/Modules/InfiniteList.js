@@ -14,6 +14,7 @@ class InfiniteList extends Component {
             data: [],
             treeData: restructure(TreeData, 0),
             droppedItems: [],
+            vaada: false,
         }
         this.rowLimit = 100;
         this.manualScrollCapture = 0;
@@ -84,8 +85,8 @@ class InfiniteList extends Component {
         e.dataTransfer.effectAllowed = 'move';
         e.dataTransfer.setData('from', JSON.stringify({ id, key, title }));
         // let img = ReactDOM.render(<span className='card'>{title}</span>, document.getElementById(key));
-        let img = document.getElementById(key);
-        e.dataTransfer.setDragImage(img, 100, 0);
+        // let img = document.getElementById(key);
+        // e.dataTransfer.setDragImage(img, 100, 0);
         e.stopPropagation()
     }
 
@@ -173,6 +174,10 @@ class InfiniteList extends Component {
         this.columnAddOrRemove(columnDropped, 'onDrop');
     }
 
+    vaada(){
+        this.setState((pS) => {return {vaada: !pS.vaada}});
+    }
+
     render() {
 
         /****************** Tree - Start ****************/
@@ -207,12 +212,16 @@ class InfiniteList extends Component {
 
 
         return (
-            <div className='infinite-list' style={{ height: window.innerHeight - 64 }}>
+            <div className={'infinite-list ' + (this.state.vaada?'three-column':'two-column')} style={{ height: window.innerHeight - 64 }}>
                 <div className="header"> Tree POC </div>
-                <div style={{visibility: 'hidden'}} id="drag-img"></div>
+                <div style={{position: 'absolute', visibility: 'hidden'}} id="drag-img"></div>
                 <div className="left-panel">
                     {tree}
+                    <button type='button' onClick={this.vaada.bind(this)}> Vaada </button>
                 </div>
+                {this.state.vaada && <div className="creation">
+
+                </div>}
                 <div className="work-area" onDragOver={(e) => { e.preventDefault() }} onDrop={this.onDropWorkArea}>
                     {droppedItems}
                 </div>
