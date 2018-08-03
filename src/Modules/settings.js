@@ -16,12 +16,13 @@ class Attributes extends Component {
   render() {
       const {chartTypes, selectedChart} = this.props.chart;
       const {onDropColumn, onDragOver, droppedItems, columnRemove} = this.props;
-      console.log('droppedItems: ', droppedItems);
+      console.log('droppedItems: kbt ', droppedItems);
 
       let rowData = droppedItems.filter(item => item.type === 'Rows')
       let columnData = droppedItems.filter(item => item.type === 'Columns')
       let legendData = droppedItems.filter(item => item.type === 'Legends')
       let chartTypesUI = chartTypes.map(item => <span className='chart-thumbnail'></span>)
+      console.log('chartTypes: ', chartTypes.length);
       return (
           <div className='attribute-container'>
               <div className="chart-types">

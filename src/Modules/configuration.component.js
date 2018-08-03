@@ -12,7 +12,7 @@ class InfiniteList extends Component {
             droppedItems: [],
             vaada: true,
             chart: {
-                chartTypes: ['pie', 'graph', 'bar', 'table', 'pie', 'graph', 'bar', 'table', 'bar', 'table' ],
+                chartTypes: ['pie', 'graph', 'bar', 'table', 'pie', 'graph', 'bar', 'table', 'bar', 'table', 'bar', 'table' ],
                 selectedChart: ''
             },
             settings: { dimentionX: ['afsd', 'fdsa'], measureY: ['fd', 'gsdfe'], legend: [] },

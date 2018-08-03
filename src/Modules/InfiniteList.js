@@ -38,11 +38,11 @@ class InfiniteList extends Component {
                 data.length = 300;
                 this.setState({ data, visibleRows })
             })
-        // this.container.addEventListener('scroll', this.onScroll);
+        this.container.addEventListener('scroll', this.onScroll);
     }
 
     componentWillUnmount() {
-        // this.container.removeEventListener('scroll', this.onScroll, false);
+        this.container.removeEventListener('scroll', this.onScroll, false);
     }
 
     onScroll(event) {
@@ -58,7 +58,7 @@ class InfiniteList extends Component {
         this.setState(prevState => {
             //   console.log('--------------------------');
             //   console.log('Adding ' + this.rowLimit + ' more rows...');
-            //   console.log('No of Rows: ', prevState.visibleRows.length+this.rowLimit);
+              console.log('No of Rows: ', prevState.visibleRows.length+this.rowLimit);
             //   let length = prevState.visibleRows.length;
             let visibleRows = prevState.data.slice(startSplice, startSplice + noOfRowsInView + 5);
             return { visibleRows }
@@ -203,7 +203,7 @@ class InfiniteList extends Component {
         let list = <div className="container" ref={input => { this.container = input }}>
             <div className="wrapper"
                 id='wrapper'
-                onWheel={this.onWheel}
+                // onScroll={this.onScroll}
                 style={{ height: 68 * this.state.data.length }}>
                 {rows}
             </div>
@@ -214,7 +214,8 @@ class InfiniteList extends Component {
         return (
             <div className={'infinite-list ' + (this.state.vaada?'three-column':'two-column')} style={{ height: window.innerHeight - 64 }}>
                 <div className="header"> Tree POC </div>
-                <div style={{position: 'absolute', visibility: 'hidden'}} id="drag-img"></div>
+                {list}
+                {/* <div style={{position: 'absolute', visibility: 'hidden'}} id="drag-img"></div>
                 <div className="left-panel">
                     {tree}
                     <button type='button' onClick={this.vaada.bind(this)}> Vaada </button>
@@ -224,7 +225,7 @@ class InfiniteList extends Component {
                 </div>}
                 <div className="work-area" onDragOver={(e) => { e.preventDefault() }} onDrop={this.onDropWorkArea}>
                     {droppedItems}
-                </div>
+                </div> */}
             </div>
         );
     }

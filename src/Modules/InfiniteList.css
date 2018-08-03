@@ -5,11 +5,11 @@
 }
 
 .two-column{
-    grid-template-columns: 20% auto;
+    /* grid-template-columns: 20% auto; */
 }
 
 .three-column{
-    grid-template-columns: 20% 20% auto;
+    /* grid-template-columns: 20% 20% auto; */
 }
 
 .infinite-list .creation{
